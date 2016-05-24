@@ -1,0 +1,18 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta charset="UTF-8">
+        {% load staticfiles %}
+        <link rel="stylesheet" type="text/css" href="{% static 'spierdon/style.css' %}" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+        <script src="{% static 'spierdon/main-page.js' %}"></script>
+
+        <title>{% block title %}{% endblock %}</title>
+    </head>
+    <body>
+        <h1>{% block head %}{% endblock %}</h1>
+        {% block content %}{% endblock %}
+
+    </body>
+</html>

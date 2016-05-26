@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tournaments</title>
+</head>
+<body>
+{% load bootstrap3 %}
+
+<table>
+    {% for item in tournaments %}
+    <tr>
+        <td><a href="{% url 'management:detail' item.id %}">{{ item.name }}</a></td>
+        <td>{{ item.discipline }}</td>
+    </tr>
+    {% endfor %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if tournaments.has_previous %}
+            <a href="?page={{ contacts.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ tournaments.number }} of {{ tournaments.paginator.num_pages }}.
+        </span>
+
+        {% if contacts.has_next %}
+            <a href="?page={{ tournaments.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
+</table>
+</body>
+</html>

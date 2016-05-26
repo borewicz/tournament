@@ -35,9 +35,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'registration',
     'custom_user',
-    'football',
+    'bootstrap3',
+    'management',
 
 ]
 
@@ -119,7 +121,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-AUTH_USER_MODEL = 'football.PortalUser'
+AUTH_USER_MODEL = 'management.User'
 
 if DEBUG:
     EMAIL_HOST = 'localhost'
@@ -129,4 +131,4 @@ if DEBUG:
     EMAIL_USE_TLS = False
     DEFAULT_FROM_EMAIL = 'testing@example.com'
 
-ACCOUNT_ACTIVATION_DAYS=7
+ACCOUNT_ACTIVATION_DAYS = 7

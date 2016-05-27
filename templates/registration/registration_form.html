@@ -1,61 +1,58 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 
 {% block title %}Sign up{% endblock %}
 
-{% block content %}
+{% block form %}
 
-<div class="register">
-    <h1>Create an account</h1>
+{% load widget_tweaks %}
 
-    <form method="post" action="" class="wide">
-      {% csrf_token %}
-      <p  >
-        <label for="id_username">Username:</label>
-      </p>
-        {% if form.username.errors %}
-          <p class="errors">{{ form.username.errors.as_text }}</p>
-         {% endif %}
-        {{ form.username }}
-
-      <p>
-        <label for="id_email">Email address:</label>
-      </p>
+<h2 class="form-signin-heading">Create an account</h2>
+<form class="form-signin" method="post" action="">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="input-name">Name</label>
+        {% render_field form.first_name id="input-name" class="form-control" placeholder="Name" type="text" %}
+        {% if form.first_name.errors %}
+        <p class="help-block" style="color: red;">
+            {{ form.first_name.errors|join:", " }}
+        </p>{% endif %}
+    </div>
+    <div class="form-group">
+        <label for="input-surname">Surname</label>
+        {% render_field form.last_name id="input-surname" class="form-control" placeholder="Surname" type="text" %}
+        {% if form.last_name.errors %}
+        <p class="help-block" style="color: red;">
+            {{ form.last_name.errors|join:", " }}
+        </p>{% endif %}
+    </div>
+    <div class="form-group">
+        <label for="input-email">Email address</label>
+        {% render_field form.email class="form-control" id="input-email" placeholder="Email" %}
         {% if form.email.errors %}
-          <p class="errors">{{ form.email.errors.as_text }}</p>
+        <p class="help-block" style="color: red;">
+            {{ form.email.errors|join:", " }}
+        </p>
         {% endif %}
-        {{ form.email }}
-      <p>
-        <label for="id_password1">Password:</label>
-      </p>
-        {% if form.password1.errors %}
-          <p class="errors">{{ form.password1.errors.as_text }}</p>
+    </div>
+    <div class="form-group">
+        <label for="input-password">Password</label>
+        {% render_field form.password1 id="input-password" class="form-control" placeholder="Password" %}
+        {% if form.password.errors %}
+        <p class="help-block" style="color: red;">
+            {{ form.password.errors|join:", " }}
+        </p>
         {% endif %}
-        {{ form.password1 }}
-      <p>
-        <label for="id_password2">Confirm Password:</label>
-      </p>
+    </div>
+    <div class="form-group">
+        <label for="input-password2">Confirm password</label>
+        {% render_field form.password2 id="input-password2" class="form-control" placeholder="Confirm password" %}
         {% if form.password2.errors %}
-          <p class="errors">{{ form.password2.errors.as_text }}</p>
-        {% endif %}
-        {{ form.password2 }}
-      <p class="submit"><input type="submit" value="Register"></p>
-    </form>
+        <p class="help-block" style="color: red;">
+            {{ form.password2.errors|join:", " }}
+        </p>{% endif %}
+    </div>
 
-    {% if form.errors %}
-      <p class="errors">Please correct the errors below: {{ form.non_field_errors }}</p>
-    {% endif %}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+</form>
 
-  {% endblock %}
-
-  {% block content-related %}
-  <p>Fill out the form to the left (all fields are required), and your
-  account will be created; you'll be sent an email with instructions on how
-  to finish your registration.</p>
-
-  <p>We'll only use your email to send you signup instructions. We hate spam
-  as much as you do.</p>
-
-  <p>This account will let you log into the ticket tracker, claim tickets,
-  and be exempt from spam filtering.</p>
-</div>
 {% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'full.html' %}
+
+{% block title %}Tournament{% endblock %}
+
+{% block content %}
+{% load bootstrap3 %}
+
+<table class="table table-condensed">
+    <tr>
+        <td>Name</td>
+        <td>Discipline</td>
+    </tr>
+    {% for item in tournaments %}
+    <tr>
+        <td><a href="{% url 'football:detail' item.id %}">{{ item.name }}</a></td>
+        <td>{{ item.discipline }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% bootstrap_pagination tournaments url="?page={{ tournaments.next_page_number }}" size="large" %}
+
+{% endblock %}

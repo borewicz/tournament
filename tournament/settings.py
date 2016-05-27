@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'registration',
     'custom_user',
     'bootstrap3',
-    'management',
+    'widget_tweaks',
+    'football',
 
 ]
 
@@ -121,7 +122,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-AUTH_USER_MODEL = 'management.User'
+AUTH_USER_MODEL = 'football.User'
 
 if DEBUG:
     EMAIL_HOST = 'localhost'

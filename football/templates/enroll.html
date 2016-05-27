@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Join{% endblock %}
+
+{% block content %}
+{% load bootstrap3 %}
+
+<div class="content container">
+    {% bootstrap_form_errors form layout='inline' %}
+    <form method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form layout='inline' %}
+        <input type="hidden" name="tournament_id" value="{{ tournament_id }}">
+        <button type="submit" class="btn btn-default">Save</button>
+    </form>
+</div>
+
+{% endblock %}

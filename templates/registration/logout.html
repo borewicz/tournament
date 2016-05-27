@@ -1,11 +1,15 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 
 {% block title %}Logged out{% endblock %}
 
-{% block content %}
-<div class="message">
-    <h1>You've been logged out.</h1>
-    <a href="/accounts/login/">Log in</a>
-</div>
+{% block form %}
+
+{% load widget_tweaks %}
+
+<p class="help-block">
+    You've been logged out.
+</p>
+<a href="{% url 'auth_login' %}" role="button" class="btn btn-lg btn-primary btn-block"
+    style="margin-top: 20px;">Login</a>
 
 {% endblock %}

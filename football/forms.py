@@ -1,5 +1,6 @@
 from django import forms
-from .models import Enrollment, User
+from .models import Enrollment, Tournament
+
 
 class EnrollForm(forms.ModelForm):
     class Meta:
@@ -7,7 +8,7 @@ class EnrollForm(forms.ModelForm):
         fields = ('ranking', 'license_id',)
 
 
-# class CustomEmailRegistrationForm(EmailRegistrationForm):
-#     first_name = forms.CharField()
-#     last_name = forms.CharField()
-
+class TournamentForm(forms.ModelForm):
+    class Meta:
+        model = Tournament
+        fields = ('name', 'description', 'deadline', 'date', 'longitude', 'latitude', 'limit', 'seeded_players',)

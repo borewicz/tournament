@@ -1,10 +1,14 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 
 {% block title %}Registration complete{% endblock %}
 
-{% block content %}
-<div class="register">
-    <h1>Check your email</h1>
-    <p>An activation link has been sent to the email address you supplied, along with instructions for activating your account.</p>
-</div>
+{% block form %}
+
+{% load widget_tweaks %}
+
+<h2 class="form-signin-heading">Check your e-mail!</h2>
+<p class="help-block">
+    An activation link has been sent to the email address you supplied, along with instructions for activating your account.
+</p>
+
 {% endblock %}

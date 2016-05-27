@@ -5,53 +5,20 @@
 {% block form %}
 
 {% load widget_tweaks %}
+{% load elements_tags %}
 
 <h2 class="form-signin-heading">Create an account</h2>
 <form class="form-signin" method="post" action="">
     {% csrf_token %}
-    <div class="form-group">
-        <label for="input-name">Name</label>
-        {% render_field form.first_name id="input-name" class="form-control" placeholder="Name" type="text" %}
-        {% if form.first_name.errors %}
-        <p class="help-block" style="color: red;">
-            {{ form.first_name.errors|join:", " }}
-        </p>{% endif %}
-    </div>
-    <div class="form-group">
-        <label for="input-surname">Surname</label>
-        {% render_field form.last_name id="input-surname" class="form-control" placeholder="Surname" type="text" %}
-        {% if form.last_name.errors %}
-        <p class="help-block" style="color: red;">
-            {{ form.last_name.errors|join:", " }}
-        </p>{% endif %}
-    </div>
-    <div class="form-group">
-        <label for="input-email">Email address</label>
-        {% render_field form.email class="form-control" id="input-email" placeholder="Email" %}
-        {% if form.email.errors %}
-        <p class="help-block" style="color: red;">
-            {{ form.email.errors|join:", " }}
-        </p>
-        {% endif %}
-    </div>
-    <div class="form-group">
-        <label for="input-password">Password</label>
-        {% render_field form.password1 id="input-password" class="form-control" placeholder="Password" %}
-        {% if form.password.errors %}
-        <p class="help-block" style="color: red;">
-            {{ form.password.errors|join:", " }}
-        </p>
-        {% endif %}
-    </div>
-    <div class="form-group">
-        <label for="input-password2">Confirm password</label>
-        {% render_field form.password2 id="input-password2" class="form-control" placeholder="Confirm password" %}
-        {% if form.password2.errors %}
-        <p class="help-block" style="color: red;">
-            {{ form.password2.errors|join:", " }}
-        </p>{% endif %}
-    </div>
-
+    <p class="help-block">
+        After all, you'll be sent an email with instructions on how
+        to finish your registration.
+    </p>
+    {% form_element form.first_name 'text' %}
+    {% form_element form.last_name 'text' %}
+    {% form_element form.email 'text' %}
+    {% form_element form.password1 'password' %}
+    {% form_element form.password2 'password' %}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
 </form>
 

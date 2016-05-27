@@ -1,8 +1,16 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 
-{% block title %}Activation complete{% endblock %}
+{% block title %}Registration complete{% endblock %}
 
-{% block content %}
-<h1>Congratulations!</h1>
-<p>Your registration is now complete. Go to the site and start having fun!</p>
+{% block form %}
+
+{% load widget_tweaks %}
+
+<h2 class="form-signin-heading">Hooray!</h2>
+<p class="help-block">
+    Your registration is now complete. Go to the site and start having fun!
+</p>
+<a href="{% url 'auth_login' %}" role="button" class="btn btn-lg btn-primary btn-block"
+    style="margin-top: 20px;">Login</a>
+
 {% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Tournament, Enrollment
-from .forms import EnrollForm
+from .forms import EnrollForm, TournamentForm
 from django.contrib.auth.decorators import login_required
 
 
@@ -44,3 +44,9 @@ def join(request, tournament_id):
         form = EnrollForm()
     return render(request, 'enroll.html', {'form': form,
                                            'tournament_id': tournament_id})
+
+
+@login_required
+def create(request):
+    form = TournamentForm()
+    return render(request, 'create.html', {'form': form, })

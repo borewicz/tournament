@@ -40,8 +40,9 @@ INSTALLED_APPS = [
     'custom_user',
     'bootstrap3',
     'widget_tweaks',
+    'bootstrap3_datetime',
+    'bootstrapform',
     'football',
-
 ]
 
 MIDDLEWARE_CLASSES = [

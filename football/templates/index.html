@@ -8,12 +8,14 @@
 <table class="table table-condensed">
     <tr>
         <td>Name</td>
-        <td>Discipline</td>
+        <td>Date</td>
+        <td>Description</td>
     </tr>
     {% for item in tournaments %}
     <tr>
         <td><a href="{% url 'football:detail' item.id %}">{{ item.name }}</a></td>
-        <td>{{ item.discipline }}</td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.description }}</td>
     </tr>
     {% endfor %}
 </table>

@@ -6,6 +6,7 @@
 
 {% load widget_tweaks %}
 {% load elements_tags %}
+{% load bootstrap %}
 
 <h2 class="form-signin-heading">Create an account</h2>
 <form class="form-signin" method="post" action="">
@@ -14,11 +15,7 @@
         After all, you'll be sent an email with instructions on how
         to finish your registration.
     </p>
-    {% form_element form.first_name 'text' %}
-    {% form_element form.last_name 'text' %}
-    {% form_element form.email 'text' %}
-    {% form_element form.password1 'password' %}
-    {% form_element form.password2 'password' %}
+    {{ form|bootstrap }}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
 </form>
 

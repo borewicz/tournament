@@ -1,18 +1,19 @@
 {% extends "form.html" %}
 
-{% block title %}Sign up{% endblock %}
+{% block title %}{{ label }}{% endblock %}
 
 {% block form %}
 
 {% load widget_tweaks %}
 {% load elements_tags %}
 
-<h2 class="form-signin-heading">Create tournament</h2>
+<h2 class="form-signin-heading">{{ label }}</h2>
+{{ form.media }}
 <form class="form-signin" method="post" action="">
     {% csrf_token %}
+    {% load bootstrap %}
     <p class="help-block"></p>
-    {% form_element form.name 'text' %}
-
+    {{ form|bootstrap }}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
 </form>
 

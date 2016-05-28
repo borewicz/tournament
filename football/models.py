@@ -16,8 +16,9 @@ class Sponsor(models.Model):
 class User(AbstractEmailUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    team = models.CharField(max_length=50, unique=True, null=False)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'team']
 
     def __str__(self):
         return "%s %s (%s)" % (self.first_name, self.last_name, self.email)
@@ -36,7 +37,7 @@ class Tournament(models.Model):
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     def __str__(self):
-        return "%s (%s)" % (self.name, self.discipline)
+        return "%s (%s)" % (self.name, self.description)
 
 
 class Enrollment(models.Model):

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.dispatch import receiver
 from registration.signals import user_registered
 from django.db.models import signals
+import random
 
 
 class Sponsor(models.Model):
@@ -95,8 +96,19 @@ def generate_pairs(sender, instance, created, **kwargs):
             pass
         else:
             teams = [i.winner for i in sender.objects.filter(round=instance.round)]
-            # tutej new round
-            # for team in teams:
-            #     pair = Pair()
+            new_round = Round(commit=False)
+            new_round.tournament = instance.round.tournament
+            new_round.name = instance.round.name + 1
+            new_round.seeded = False
+            new_round.save()
+            for team in teams:
+                pair = Pair(commit=False)
+                pair.round = new_round
+                pair.player_1 = team
+                opponent = random.choice(team)
+                pair.player_2 = opponent
+                pair.save()
+                teams.remove(opponent)
+
 
 signals.post_save.connect(generate_pairs, sender=Pair)

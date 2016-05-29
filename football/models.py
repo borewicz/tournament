@@ -3,6 +3,7 @@ from custom_user.models import AbstractEmailUser
 from django.conf import settings
 from django.dispatch import receiver
 from registration.signals import user_registered
+from django.db.models import signals
 
 
 class Sponsor(models.Model):
@@ -55,3 +56,47 @@ def user_registered_handler(sender, user, request, **kwargs):
     user.first_name = request.POST.get('first_name')
     user.last_name = request.POST.get('last_name')
     user.save()
+
+
+class Round(models.Model):
+    tournament = models.ForeignKey(Tournament)
+    name = models.IntegerField(blank=False)
+    seeded = models.BooleanField()
+
+
+class Pair(models.Model):
+    round = models.ForeignKey(Round, related_name="round")
+    player_1 = models.ForeignKey(User, related_name="player_1")
+    player_2 = models.ForeignKey(User, related_name="player_2")
+    winner = models.ForeignKey(User, null=True, related_name="winner")
+    result_player_1 = models.IntegerField(blank=True)
+    result_player_2 = models.IntegerField(blank=True)
+
+    def __str__(self):
+        return "round %d: %s %d - %s %d" % (
+            self.round_id, self.player_1, self.result_player_1, self.player_2, self.result_player_2)
+
+    def set_result(self, result_1, result_2):
+        if self.result_player_1.blank and self.result_player_2.blank:
+            self.result_player_1 = result_1
+            self.result_player_2 = result_2
+        else:
+            if self.result_player_2 == result_1 and self.result_player_2 == result_2:
+                self.winner = self.player_1 if result_1 > result_2 else self.player_2
+            else:
+                self.result_player_1 = self.result_player_2 = None
+        self.save()
+
+
+def generate_pairs(sender, instance, created, **kwargs):
+    unfinished = sender.objects.filter(winner__isnull=True, round=instance.round)
+    if not unfinished.count:
+        if instance.round.seeded:
+            pass
+        else:
+            teams = [i.winner for i in sender.objects.filter(round=instance.round)]
+            # tutej new round
+            # for team in teams:
+            #     pair = Pair()
+
+signals.post_save.connect(generate_pairs, sender=Pair)

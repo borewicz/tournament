@@ -1,5 +1,5 @@
 from django import forms
-from .models import Enrollment, Tournament, Sponsor
+from .models import Enrollment, Tournament, Sponsor, Match
 from bootstrap3_datetime.widgets import DateTimePicker
 from datetime import date
 from django.utils import timezone
@@ -33,5 +33,11 @@ class TournamentForm(forms.ModelForm):
         if timezone.now() > form_date:
             self.add_error('date', "You cannot add tournament from past.")
 
-        if cleaned_data.get("deadline") < form_date:
-            self.add_error('deadline', "Deadline must end later than start date.")
+        if cleaned_data.get("deadline") > form_date:
+            self.add_error('deadline', "Deadline must start later than start date.")
+
+
+class MatchForm(forms.ModelForm):
+    class Meta:
+        model = Match
+        fields = ('score',)

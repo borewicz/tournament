@@ -3,8 +3,9 @@ from custom_user.models import AbstractEmailUser
 from django.conf import settings
 from django.dispatch import receiver
 from registration.signals import user_registered
-from django.db.models import signals
+from django.db.models import signals, Max
 import random
+from model_utils import FieldTracker
 
 
 class Sponsor(models.Model):
@@ -23,7 +24,7 @@ class User(AbstractEmailUser):
     REQUIRED_FIELDS = ['first_name', 'last_name', 'team']
 
     def __str__(self):
-        return "%s %s (%s)" % (self.first_name, self.last_name, self.email)
+        return "%s %s" % (self.first_name, self.last_name)
 
 
 class Tournament(models.Model):
@@ -37,6 +38,7 @@ class Tournament(models.Model):
     limit = models.IntegerField()
     seeded_players = models.IntegerField()
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL)
+    in_progress = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.description)
@@ -65,61 +67,66 @@ class Round(models.Model):
     seeded = models.BooleanField()
 
 
-class Pair(models.Model):
+class Match(models.Model):
     round = models.ForeignKey(Round, related_name="round")
     player_1 = models.ForeignKey(User, related_name="player_1")
     player_2 = models.ForeignKey(User, related_name="player_2")
     winner = models.ForeignKey(User, null=True, blank=True, related_name="winner")
-    result_player_1 = models.IntegerField(null=True)
-    result_player_2 = models.IntegerField(null=True)
+    score = models.CharField(max_length=5, null=False, default='-')
+    tracker = FieldTracker()
+    last_filled = models.ForeignKey(User, related_name="last_filled", null=True, blank=True)
 
     def __str__(self):
         return "round %d: %s - %s" % (
-            self.round_id, self.player_1, self.player_2)
+            self.round.name, self.player_1.team, self.player_2.team)
 
-    def set_result(self, result_1, result_2):
-        if self.result_player_1 is not None and self.result_player_2 is not None:
-            self.result_player_1 = result_1
-            self.result_player_2 = result_2
+    @classmethod
+    def update_bracket(cls, teams, tournament, seeded=False):
+        new_round = Round()
+        new_round.tournament = tournament
+        new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
+        new_round.seeded = seeded
+        new_round.save()
+        if seeded:
+            seeded_teams = teams[:tournament.seeded_players]
+            teams = teams[tournament.seeded_players:]
         else:
-            if self.result_player_2 == result_1 and self.result_player_2 == result_2:
-                self.winner = self.player_1 if result_1 > result_2 else self.player_2
-            else:
-                self.result_player_1 = self.result_player_2 = None
-        
+            seeded_teams = []
+        for team in seeded_teams:
+            opponent = random.choice(teams)
+            Match.objects.create(round=new_round,
+                                 player_1=team,
+                                 player_2=opponent)
+            teams.remove(opponent)
+        while len(teams) != 0:
+            team = random.choice(teams)
+            while True:
+                opponent = random.choice(teams)
+                if team != opponent:
+                    break
+            Match.objects.create(round=new_round,
+                                 player_1=team,
+                                 player_2=opponent)
+            teams.remove(opponent)
+            teams.remove(team)
 
-def generate_pairs(sender, instance, created, **kwargs):
-    # instance.set_result(instance.result_player_1, instance.result_player_2)
-    if instance.result_player_1 > instance.result_player_2:
-        sender.objects.filter(pk=instance.pk).update(winner=instance.player_1)
-    else:
-        sender.objects.filter(pk=instance.pk).update(winner=instance.player_2)
+
+def generate_tournament_bracket(sender, instance, created, **kwargs):
+    if created or instance.tracker.previous('score') == '-':
+        return
+    if instance.tracker.has_changed('score'):
+        sender.objects.filter(pk=instance.pk).update(winner=None,
+                                                     score='-',
+                                                     last_filled=None)
+        return
+    score = instance.score.split(':')
+    winner = instance.player_1 if int(score[0]) > int(score[1]) else instance.player_2
+    sender.objects.filter(pk=instance.pk).update(winner=winner)
     unfinished = sender.objects.filter(winner__isnull=True, round=instance.round)
-    print('siki')
-    if not unfinished.count:
-        if instance.round.seeded:
-            print('seeded')
-            pass
-        else:
-            print('not_seeded')
-            teams = [i.winner for i in sender.objects.filter(round=instance.round)]
-            new_round = Round(commit=False)
-            new_round.tournament = instance.round.tournament
-            new_round.name = instance.round.name + 1
-            new_round.seeded = False
-            new_round.save()
-            for team in teams:
-                pair = Pair(commit=False)
-                pair.round = new_round
-                pair.player_1 = team
-                while True:
-                    opponent = random.choice(team)
-                    if team != opponent:
-                        break
-                pair.player_2 = opponent
-                pair.save()
-                teams.remove(opponent)
-                teams.remove(team)
+    if unfinished.count() == 0:
+        teams = [e.winner for e in Match.objects.filter(round=instance.round)]
+        if len(teams) == 1:
+            return
+        Match.update_bracket(teams, instance.round.tournament, seeded=instance.round.seeded)
 
-
-signals.post_save.connect(generate_pairs, sender=Pair)
+signals.post_save.connect(generate_tournament_bracket, sender=Match)

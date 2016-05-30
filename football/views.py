@@ -1,11 +1,12 @@
 from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Tournament, Enrollment, Sponsor, User, Pair, Round
-from .forms import EnrollForm, TournamentForm
+from .models import Tournament, Enrollment, Sponsor, User, Match, Round
+from .forms import EnrollForm, TournamentForm, MatchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import random
+
 
 # Create your views here.
 
@@ -25,10 +26,18 @@ def detail(request, tournament_id):
     tournament = Tournament.objects.get(id=tournament_id)
     count = Enrollment.objects.filter(tournament=tournament).count()
     enrolled = Enrollment.objects.filter(tournament__pk=tournament_id, user__id=request.user.id).count()
+
+    if count == tournament.limit and not tournament.in_progress:
+        teams = [e.user for e in Enrollment.objects.filter(tournament=tournament).order_by('-ranking')]
+        Match.update_bracket(teams, tournament, seeded=True)
+        Tournament.objects.filter(pk=tournament.pk).update(in_progress=True)
+
     return render(request, "detail.html",
                   {"tournament": tournament,
                    "count": count,
-                   "enrolled": enrolled})
+                   "enrolled": enrolled,
+                   "enrollments": Enrollment.objects.filter(tournament=tournament),
+                   "matches": Match.objects.filter(round__tournament=tournament).order_by('round__name')})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
@@ -82,28 +91,24 @@ def edit(request, tournament_id):
                                            'label': 'Edit tournament'})
 
 
-def generate():
-    print('not_seeded')
-    tournament = Tournament.objects.all()[0]
-    teams = list(User.objects.all())
-    new_round = Round()
-    new_round.tournament = tournament
-    new_round.name = 1
-    new_round.seeded = False
-    new_round.save()
-    # for team in teams:
-    while len(teams) != 0:
-        team = random.choice(teams)
-        pair = Pair()
-        pair.round = new_round
-        pair.player_1 = team
-        while True:
-            opponent = random.choice(teams)
-            if team != opponent:
-                break
-        pair.player_2 = opponent
-        pair.save()
-        teams.remove(opponent)
-        teams.remove(team)
-        print(teams)
-
+@login_required(login_url=reverse_lazy('auth_login'))
+def update_match(request, match_id):
+    match = Match.objects.filter(id=match_id)[0] if Match.objects.filter(id=match_id) else None
+    if not match:
+        return HttpResponse("Match not exist!")
+    if match.player_1 != request.user and match.player_2 != request.user:
+        return HttpResponse("It's not your match!")
+    # fill = match.fill_1 if match.player_2 == request.user else match.fill_2
+    if match.last_filled == request.user:
+        return HttpResponse("You already fill!")
+    if request.method == "POST":
+        form = MatchForm(request.POST, instance=match)
+        if form.is_valid():
+            match = form.save(commit=False)
+            match.last_filled = request.user
+            match.save()
+            return redirect('football:index')
+    else:
+        form = MatchForm(instance=match)
+    return render(request, 'create.html', {'form': form,
+                                           'label': 'Update match'})

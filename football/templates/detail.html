@@ -23,25 +23,73 @@
             <dd>{{ tournament.date }}</dd>
             <dt>Sponsors</dt>
             {% for item in tournament.sponsors.all %}
-                <dd>{{ item.name }}</dd>
+            <dd>{{ item.name }}</dd>
             {% endfor %}
         </dl>
     </div>
     <div class="col-md-4">
         <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=300x300&maptype=roadmap
-&markers=color:blue|{{ tournament.latitude }},{{ tournament.longitude }}" class="img-rounded" />
+&markers=color:blue|{{ tournament.latitude }},{{ tournament.longitude }}" class="img-rounded"/>
     </div>
+    {% if user.is_authenticated %}
+    <div>
+        <a class="btn btn-default{% if enrolled != 0 %} disabled{% endif %}" role="button"
+           {% if enrolled == 0 %}href="{% url 'football:join' tournament.id %}"{% endif %}>Enroll</a>
+        {% if user == tournament.organizer %}
+        <a class="btn btn-default" role="button" href="{% url 'football:edit' tournament.id %}">Edit</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    <h3>Teams</h3>
+    <table class="table table-condensed">
+        <tr>
+            <td>#</td>
+            <td>Team</td>
+            <td>Coach</td>
+            <td>Ranking</td>
+        </tr>
+        {% for item in enrollments %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.user.team }}</a></td>
+            <td>{{ item.user }}</td>
+            <td>{{ item.ranking }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a class="btn btn-default" role="button" href="{% url 'football:edit' tournament.id %}">Start!</a>
+    {% if matches %}
+        <h3>Matches</h3>
+        <table class="table table-condensed">
+            <tr>
+                <td>Round</td>
+                <td>Team 1</td>
+                <td>Team 2</td>
+                <td>Result</td>
+            </tr>
+            {% for item in matches %}
+            <tr{% if item.player_1 == request.user or item.player_2 == request.user %} class="info"{% endif %}>
+                <td>{{ item.round.name }}</td>
+                <td{% if item.player_1 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_1.team }}</td>
+                <td{% if item.player_2 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_2.team }}</td>
+                <td>
+                    {% if item.winner %}
+                        {{ item.score }}
+                    {% else %}
+                        {% if item.last_filled and item.last_filled == request.user %}
+                            Update
+                        {% elif item.player_1 == request.user or item.player_2 == request.user %}
+                            <a href="{% url 'football:update_match' item.id %}">Update</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 </div>
 
-{% if user.is_authenticated %}
-    {% if enrolled == 0 %}
-        <a class="btn btn-default" role="button" href="{% url 'football:join' tournament.id %}">Enroll</a>
-    {% elif enrolled > 0 %}
-        <a class="btn btn-default btn-lg disabled" role="button">Enroll</a>
-    {% endif %}
-    {% if user == tournament.organizer %}
-        <a class="btn btn-default" role="button" href="{% url 'football:edit' tournament.id %}">Edit</a>
-    {% endif %}
-{% endif %}
 
 {% endblock %}

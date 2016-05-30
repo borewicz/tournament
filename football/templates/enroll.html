@@ -1,18 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'form.html' %}
 
-{% block title %}Join{% endblock %}
+{% block title %}Join tournament{% endblock %}
 
-{% block content %}
+{% block form %}
 {% load bootstrap3 %}
+{% load bootstrap %}
 
-<div class="content container">
-    {% bootstrap_form_errors form layout='inline' %}
-    <form method="post" class="form">
-        {% csrf_token %}
-        {% bootstrap_form form layout='inline' %}
-        <input type="hidden" name="tournament_id" value="{{ tournament_id }}">
-        <button type="submit" class="btn btn-default">Save</button>
-    </form>
-</div>
+<h2 class="form-signin-heading">Join tournament</h2>
+<form class="form-signin" method="post" action="">
+    {% csrf_token %}
+    {% load bootstrap %}
+    <p class="help-block">[some description here]</p>
+    {{ form|bootstrap }}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Join</button>
+</form>
 
 {% endblock %}

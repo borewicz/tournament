@@ -1,11 +1,11 @@
 from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Tournament, Enrollment, Sponsor
+from .models import Tournament, Enrollment, Sponsor, User, Pair, Round
 from .forms import EnrollForm, TournamentForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-
+import random
 
 # Create your views here.
 
@@ -80,3 +80,30 @@ def edit(request, tournament_id):
 
     return render(request, 'create.html', {'form': form,
                                            'label': 'Edit tournament'})
+
+
+def generate():
+    print('not_seeded')
+    tournament = Tournament.objects.all()[0]
+    teams = list(User.objects.all())
+    new_round = Round()
+    new_round.tournament = tournament
+    new_round.name = 1
+    new_round.seeded = False
+    new_round.save()
+    # for team in teams:
+    while len(teams) != 0:
+        team = random.choice(teams)
+        pair = Pair()
+        pair.round = new_round
+        pair.player_1 = team
+        while True:
+            opponent = random.choice(teams)
+            if team != opponent:
+                break
+        pair.player_2 = opponent
+        pair.save()
+        teams.remove(opponent)
+        teams.remove(team)
+        print(teams)
+

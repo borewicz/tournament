@@ -1,6 +1,6 @@
 from django.contrib import admin
 # from custom_user.admin import EmailUserAdmin
-from .models import User, Tournament, Sponsor, Enrollment
+from .models import *
 # from .forms import UserCreationForm
 
 '''
@@ -19,3 +19,5 @@ admin.site.register(User)
 admin.site.register(Tournament)
 admin.site.register(Sponsor)
 admin.site.register(Enrollment)
+admin.site.register(Pair)
+admin.site.register(Round)

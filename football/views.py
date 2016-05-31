@@ -22,14 +22,17 @@ def index(request):
     return render(request, 'index.html', {'tournaments': tournaments})
 
 
-def detail(request, tournament_id):
+def detail(request, tournament_id, force=0):
     tournament = Tournament.objects.get(id=tournament_id)
     count = Enrollment.objects.filter(tournament=tournament).count()
     enrolled = Enrollment.objects.filter(tournament__pk=tournament_id, user__id=request.user.id).count()
 
+    if force:
+        Tournament.objects.filter(pk=tournament.pk).update(in_progress=False)
+
     if count == tournament.limit and not tournament.in_progress:
         teams = [e.user for e in Enrollment.objects.filter(tournament=tournament).order_by('-ranking')]
-        Match.update_bracket(teams, tournament, seeded=True)
+        Match.random_matches(teams, tournament)
         Tournament.objects.filter(pk=tournament.pk).update(in_progress=True)
 
     return render(request, "detail.html",
@@ -37,7 +40,8 @@ def detail(request, tournament_id):
                    "count": count,
                    "enrolled": enrolled,
                    "enrollments": Enrollment.objects.filter(tournament=tournament),
-                   "matches": Match.objects.filter(round__tournament=tournament).order_by('round__name')})
+                   "matches": Match.objects.filter(round__tournament=tournament).order_by('round__name'),
+                   "bracket": Match.generate_json(tournament)})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))

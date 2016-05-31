@@ -2,6 +2,12 @@
 
 {% block title %}{{ tournament.name }} - details{% endblock %}
 
+{% block head %}
+{% load staticfiles %}
+<script src="{% static 'details/jquery.bracket.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'details/jquery.bracket.min.css' %}" />
+{% endblock %}
+
 {% block content %}
 
 {% load bootstrap3 %}
@@ -57,7 +63,7 @@
         </tr>
         {% endfor %}
     </table>
-    <a class="btn btn-default" role="button" href="{% url 'football:edit' tournament.id %}">Start!</a>
+    <a class="btn btn-default" role="button" href="{% url 'football:force_detail' tournament.id 1 %}">Start!</a>
     {% if matches %}
         <h3>Matches</h3>
         <table class="table table-condensed">
@@ -88,7 +94,18 @@
             </tr>
             {% endfor %}
         </table>
+        <div class="brackets">
+    </div>
+         <script type="text/javascript">
+             var data = {{ bracket }}
+             $('.brackets').bracket({
+                skipSecondaryFinal: false,
+                  init: data
+             });
+
+        </script>
     {% endif %}
+
 </div>
 
 

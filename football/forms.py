@@ -18,8 +18,7 @@ class TournamentForm(forms.ModelForm):
 
     class Meta:
         model = Tournament
-        # fields = ('name', 'description', 'deadline', 'date', 'longitude', 'latitude', 'limit', 'seeded_players', '')
-        exclude = ['organizer']
+        exclude = ['organizer', 'in_progress']
         widgets = {
             'date': DateTimePicker(options={"format": "YYYY-MM-DD HH:mm",
                                             "pickSeconds": False}),

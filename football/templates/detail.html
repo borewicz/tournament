@@ -16,7 +16,7 @@
     <h1>{{ tournament.name }}</h1>
 </div>
 
-<div class="row" style="margin-top:10px;">
+<div class="row" style="margin-top:10px; margin-bottom:50px;">
     <div class="col-md-8">
         <dl class="dl-horizontal">
             <dt>Description</dt>
@@ -44,6 +44,9 @@
         {% if user == tournament.organizer %}
         <a class="btn btn-default" role="button" href="{% url 'football:edit' tournament.id %}">Edit</a>
         {% endif %}
+        {% if user.is_superuser == True %}
+        <a class="btn btn-default" role="button" href="{% url 'football:detail' tournament.id %}?force=True">Force</a>
+        {% endif %}
     </div>
     {% endif %}
     <h3>Teams</h3>
@@ -63,43 +66,44 @@
         </tr>
         {% endfor %}
     </table>
-    <a class="btn btn-default" role="button" href="{% url 'football:force_detail' tournament.id 1 %}">Start!</a>
     {% if matches %}
         <h3>Matches</h3>
-        <table class="table table-condensed">
-            <tr>
-                <td>Round</td>
-                <td>Team 1</td>
-                <td>Team 2</td>
-                <td>Result</td>
-            </tr>
-            {% for item in matches %}
-            <tr{% if item.player_1 == request.user or item.player_2 == request.user %} class="info"{% endif %}>
-                <td>{{ item.round.name }}</td>
-                <td{% if item.player_1 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_1.team }}</td>
-                <td{% if item.player_2 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_2.team }}</td>
-                <td>
-                    {% if item.winner %}
-                        {{ item.score }}
-                    {% else %}
-                        {% if item.last_filled and item.last_filled == request.user %}
-                            Update
-                        {% elif item.player_1 == request.user or item.player_2 == request.user %}
-                            <a href="{% url 'football:update_match' item.id %}">Update</a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <div class="brackets">
+    <div class="col-md-6 col-md-offset-3" style="margin-bottom:50px;">
+        <div class="brackets"></div>
     </div>
+            <table class="table table-condensed">
+                <tr>
+                    <td>Round</td>
+                    <td>Team 1</td>
+                    <td>Team 2</td>
+                    <td>Result</td>
+                </tr>
+                {% for item in matches %}
+                <tr{% if item.player_1 == request.user or item.player_2 == request.user %} class="info"{% endif %}>
+                    <td>{{ item.round.name }}</td>
+                    <td{% if item.player_1 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_1.team }}</td>
+                    <td{% if item.player_2 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_2.team }}</td>
+                    <td>
+                        {% if item.winner %}
+                            {{ item.score }}
+                        {% else %}
+                            {% if item.last_filled and item.last_filled == request.user %}
+                                Update
+                            {% elif item.player_1 == request.user or item.player_2 == request.user %}
+                                <a href="{% url 'football:update_match' item.id %}">Update</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            </div>
          <script type="text/javascript">
-             var data = {{ bracket }}
+             var data = {% autoescape off %}{{ bracket }}{% endautoescape %}
              $('.brackets').bracket({
-                skipSecondaryFinal: false,
+                skipConsolationRound: true,
                   init: data
              });
 

@@ -22,6 +22,33 @@ def index(request):
     return render(request, 'index.html', {'tournaments': tournaments})
 
 
+def search(request):
+    if request.GET and request.GET['query']:
+        paginator = Paginator(Tournament.objects.filter(name__contains=request.GET['query']), 10)
+        page = request.GET.get('page')
+        try:
+            tournaments = paginator.page(page)
+        except PageNotAnInteger:
+            tournaments = paginator.page(1)
+        except EmptyPage:
+            tournaments = paginator.page(paginator.num_pages)
+        return render(request, 'index.html', {'tournaments': tournaments})
+    else:
+        return redirect('football:index')
+
+
+def current(request):
+    paginator = Paginator(Tournament.objects.filter(enrollment__user=request.user), 10)
+    page = request.GET.get('page')
+    try:
+        tournaments = paginator.page(page)
+    except PageNotAnInteger:
+        tournaments = paginator.page(1)
+    except EmptyPage:
+        tournaments = paginator.page(paginator.num_pages)
+    return render(request, 'index.html', {'tournaments': tournaments})
+
+
 def detail(request, tournament_id, force=0):
     tournament = Tournament.objects.get(id=tournament_id)
     count = Enrollment.objects.filter(tournament=tournament).count()
@@ -46,6 +73,13 @@ def detail(request, tournament_id, force=0):
 
 @login_required(login_url=reverse_lazy('auth_login'))
 def join(request, tournament_id):
+    tournament = Tournament.objects.filter(id=tournament_id)
+    if not tournament:
+        return HttpResponse("Tournament not exist!")
+    if tournament[0].limit == Enrollment.objects.filter(tournament=tournament).count():
+        return HttpResponse("Full!")
+    if Enrollment.objects.filter(tournament=tournament, user=request.user):
+        return HttpResponse("Already joined!")
     if request.method == "POST":
         form = EnrollForm(request.POST)
         if form.is_valid():
@@ -69,7 +103,7 @@ def create(request):
             tournament.organizer = request.user
             tournament.save()
             form.save_m2m()
-            return redirect('football:index')
+            return redirect('football:detail', tournament.pk)
     else:
         form = TournamentForm()
     return render(request, 'create.html', {'form': form,
@@ -87,7 +121,7 @@ def edit(request, tournament_id):
         form = TournamentForm(request.POST, instance=tournament[0])
         if form.is_valid():
             form.save()
-            return redirect('football:index')
+            return redirect('football:detail', tournament[0].pk)
     else:
         form = TournamentForm(instance=tournament[0])
 
@@ -111,7 +145,7 @@ def update_match(request, match_id):
             match = form.save(commit=False)
             match.last_filled = request.user
             match.save()
-            return redirect('football:index')
+            return redirect('football:detail', match.round.tournament.id)
     else:
         form = MatchForm(instance=match)
     return render(request, 'create.html', {'form': form,

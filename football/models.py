@@ -29,7 +29,7 @@ class User(AbstractEmailUser):
 
 
 class Tournament(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=100)
     deadline = models.DateTimeField()
     date = models.DateTimeField()
@@ -82,26 +82,6 @@ class Match(models.Model):
         return "round %d: %s - %s" % (
             self.round.name, self.player_1.team, self.player_2.team)
 
-    '''
-                var singleElimination = {
-              "teams": [              // Matchups
-                ["Team 1", "Team 2"],
-                ["Team 3", "Team 4"],
-                ["Team 5", "Team 6"],
-                ["Team 7", "Team 8"],
-              ],
-              "results": [            // List of brackets (single elimination, so only one bracket)
-                [                     // List of rounds in bracket
-                  [                   // First round in this bracket
-                    [1, 2],           // Team 1 vs Team 2
-                    [3, 4],
-                    [5, 6],
-                    [7, 8]
-                  ],
-                ]
-              ]
-            }'''
-
     @classmethod
     def generate_json(cls, tournament):
         results = []
@@ -115,8 +95,11 @@ class Match(models.Model):
                 for m in matches:
                     if r == 1:
                         teams.append([m.player_1.team, m.player_2.team])
-                    score = m.score.split(':')
-                    scores += [[int(score[0]), int(score[1])]]
+                    try:
+                        score = m.score.split(':')
+                        scores += [[int(score[0]), int(score[1])]]
+                    except ValueError:
+                        scores += [[]]
                 results += [scores]
         return str({'teams': teams,
                     'results': results})

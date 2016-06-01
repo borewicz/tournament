@@ -10,8 +10,8 @@ from django.db.models import Q
 
 
 class Sponsor(models.Model):
-    name = models.CharField(max_length=50)
-    picture = models.ImageField(upload_to='upload/', default='default.jpg')
+    name = models.CharField(max_length=50, unique=True)
+    picture = models.ImageField()
 
     def __str__(self):
         return self.name
@@ -48,7 +48,7 @@ class Tournament(models.Model):
 class Enrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     tournament = models.ForeignKey(Tournament)
-    ranking = models.IntegerField(unique=True)
+    ranking = models.IntegerField()
     license_id = models.IntegerField(unique=True)
 
     def __str__(self):

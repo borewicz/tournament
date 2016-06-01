@@ -11,7 +11,7 @@
 <form class="form-signin" method="post" action="">
     {% csrf_token %}
     {% load bootstrap %}
-    <p class="help-block"></p>
+    <p class="help-block">You can add sponsors <a href="{% url 'football:add_sponsor' %}">here</a>.</p>
     {{ form|bootstrap }}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
 </form>

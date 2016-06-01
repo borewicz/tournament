@@ -29,13 +29,14 @@
             <dd>{{ tournament.date }}</dd>
             <dt>Sponsors</dt>
             {% for item in tournament.sponsors.all %}
-            <dd>{{ item.name }}</dd>
+            <dd><img src="{{ item.picture.url }}" style="height: 50px; margin-right: 5px;"/>{{ item.name }}</dd>
             {% endfor %}
         </dl>
     </div>
     <div class="col-md-4">
         <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=300x300&maptype=roadmap
 &markers=color:blue|{{ tournament.latitude }},{{ tournament.longitude }}" class="img-rounded"/>
+    </div>
     </div>
     {% if user.is_authenticated %}
     <div>

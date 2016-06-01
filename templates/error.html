@@ -1,0 +1,14 @@
+{% extends "form.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% load widget_tweaks %}
+
+{% block form %}
+<h2 class="form-signin-heading">Error :(</h2>
+<p class="help-block">
+    {{ description }}
+</p>
+<a class="btn btn-lg btn-primary btn-block" href="javascript:history.go(1)" role="button">Go back</a>
+
+{% endblock %}

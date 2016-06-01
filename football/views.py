@@ -2,9 +2,10 @@ from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Tournament, Enrollment, Sponsor, User, Match, Round
-from .forms import EnrollForm, TournamentForm, MatchForm
+from .forms import EnrollForm, TournamentForm, MatchForm, SponsorForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.utils import timezone
 import random
 
 
@@ -57,7 +58,7 @@ def detail(request, tournament_id, force=0):
     if force:
         Tournament.objects.filter(pk=tournament.pk).update(in_progress=False)
 
-    if count == tournament.limit and not tournament.in_progress:
+    if (count == tournament.limit or timezone.now() > tournament.date) and not tournament.in_progress:
         teams = [e.user for e in Enrollment.objects.filter(tournament=tournament).order_by('-ranking')]
         Match.random_matches(teams, tournament)
         Tournament.objects.filter(pk=tournament.pk).update(in_progress=True)
@@ -71,15 +72,21 @@ def detail(request, tournament_id, force=0):
                    "bracket": Match.generate_json(tournament)})
 
 
+def return_error(description):
+    return render_to_response("error.html", {'description': description})
+
+
 @login_required(login_url=reverse_lazy('auth_login'))
 def join(request, tournament_id):
     tournament = Tournament.objects.filter(id=tournament_id)
     if not tournament:
-        return HttpResponse("Tournament not exist!")
+        return return_error('Tournament not exist!')
     if tournament[0].limit == Enrollment.objects.filter(tournament=tournament).count():
-        return HttpResponse("Full!")
+        return return_error("No more room for you!")
     if Enrollment.objects.filter(tournament=tournament, user=request.user):
-        return HttpResponse("Already joined!")
+        return return_error("Already joined!")
+    if timezone.now() > tournament.deadline:
+        return return_error("It's late!")
     if request.method == "POST":
         form = EnrollForm(request.POST)
         if form.is_valid():
@@ -114,9 +121,9 @@ def create(request):
 def edit(request, tournament_id):
     tournament = Tournament.objects.filter(id=tournament_id)
     if not tournament:
-        return HttpResponse("Tournament not exist!")
+        return return_error("Tournament not exist!")
     if tournament[0].organizer != request.user:
-        return HttpResponse("It's not your tournament!")
+        return return_error("It's not your tournament!")
     if request.method == "POST":
         form = TournamentForm(request.POST, instance=tournament[0])
         if form.is_valid():
@@ -133,12 +140,12 @@ def edit(request, tournament_id):
 def update_match(request, match_id):
     match = Match.objects.filter(id=match_id)[0] if Match.objects.filter(id=match_id) else None
     if not match:
-        return HttpResponse("Match not exist!")
+        return return_error("Match not exist!")
     if match.player_1 != request.user and match.player_2 != request.user:
-        return HttpResponse("It's not your match!")
+        return return_error("It's not your match!")
     # fill = match.fill_1 if match.player_2 == request.user else match.fill_2
     if match.last_filled == request.user:
-        return HttpResponse("You already fill!")
+        return return_error("You already entered score!")
     if request.method == "POST":
         form = MatchForm(request.POST, instance=match)
         if form.is_valid():
@@ -150,3 +157,15 @@ def update_match(request, match_id):
         form = MatchForm(instance=match)
     return render(request, 'create.html', {'form': form,
                                            'label': 'Update match'})
+
+
+@login_required(login_url=reverse_lazy('auth_login'))
+def add_sponsor(request):
+    if request.method == "POST":
+        form = SponsorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('football:index')
+    else:
+        form = SponsorForm()
+    return render(request, 'sponsor.html', {'form': form})
